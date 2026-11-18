@@ -50,11 +50,14 @@ An overview of the name changes:
 
 | What          | Old name                                                    | New name   |
 |---------------|-------------------------------------------------------------|------------|
-| Binaries      | `ntp-daemon`, `ntp-ctl`, `ntp-metrics-exporter`             | TODO       |
-| systemd units | `ntpd-rs.service`, `ntpd-rs-metrics.service`                | TODO       |
-| Crates        | `ntpd`, `ntp-proto`                                         | TODO       |
+| Binaries      | `ntp-daemon`, `ntp-ctl`, `ntp-metrics-exporter`             | TBD        |
+| Binaries      | `statime-linux`                                             | no longer used |
+| systemd units | `ntpd-rs.service`, `ntpd-rs-metrics.service`                | `statime.service`, `statime-metrics.service` |
+| Crates        | `ntpd`, `ntp-proto`                                         | TBD        |
+| Crates        | `statime`                                                   | `statime-ptp`|
 | Repositories  | `pendulum-project/ntpd-rs`                                  | `trifectatechfoundation/statime` |
-| Documentation | `docs.ntpd-rs.pendulum-project.org`                         | TODO       |
+| Repositories  | `pendulum-project/statime`                                  | archived   |
+| Documentation | `docs.ntpd-rs.pendulum-project.org`                         | TBD        |
 
 A migration guide will be added to our documentation when the 2.0 is released.
 
