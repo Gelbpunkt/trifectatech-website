@@ -47,7 +47,7 @@ In 2025, the ICANN Grant Program supported our project [Secure time for a Safe I
 ### Roadmap
 
 - Q3 2026: Experimental service for NTS pooling
-- Q4 2026: Stable service for NTS pooling
+- Q1 2027: Stable service for NTS KELB pooling
 - Q1 2027: Completion of the [Secure time for a Safe Internet](https://www.icann.org/en/grant-program/first-cycle-funded-projects#secure-time-safe-internet) project
 - Q2 2027 - Q4 2028: Scaling of the sectime.org NTS pool services (pending funding)
 
