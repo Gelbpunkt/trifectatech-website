@@ -58,6 +58,8 @@ In 2025, we started work on a pool management system for NTS servers to facilita
 
 In July of 2026, work started to prepare ntpd-rs to become [the default time synchronization utility on Ubuntu](/blog/announcing-ntpd-rs-as-default-on-ubuntu/).
 
+In November 2026, we announced [sectime.org](https://sectime.org), the service that offers secure time to the Internet, see our blog post [Introducing sectime.org: a pool of secure time servers](/blog/sectime-org-a-pool-of-secure-time-servers).
+
 ### Roadmap
 
 See the [ntpd-rs](/projects/ntpd-rs), [Statime](/projects/statime) and [Sectime.org](/projects/sectime) project pages.

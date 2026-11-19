@@ -44,6 +44,8 @@ In 2024, we first wrote about [the importance of secure time synchronization](ht
 
 In 2025, the ICANN Grant Program supported our project [Secure time for a Safe Internet](https://www.icann.org/en/grant-program/first-cycle-funded-projects#secure-time-safe-internet) for the development of services that implemenent two proposals for NTS pooling. The project will complete in early 2027.
 
+In November 2026, we announced [sectime.org](https://sectime.org), the service that offers the two types of pooling, see our blog post [Introducing sectime.org: a pool of secure time servers](/blog/sectime-org-a-pool-of-secure-time-servers).
+
 ### Roadmap
 
 - Q3 2026: Experimental service for NTS pooling
