@@ -50,7 +50,7 @@ An overview of the name changes:
 
 | What          | Old name                                                    | New name   |
 |---------------|-------------------------------------------------------------|------------|
-| Binaries      | `ntp-daemon`, `ntp-ctl`, `ntp-metrics-exporter`             | TODO `statime`, `statime-metrics`, `statime-ctl` |
+| Binaries      | `ntp-daemon`, `ntp-ctl`, `ntp-metrics-exporter`             | `statime-daemon`, `statime-metrics`, `statime` |
 | Binaries      | `statime-linux`                                             | no longer used |
 | systemd units | `ntpd-rs.service`, `ntpd-rs-metrics.service`                | `statime.service`, `statime-metrics.service` |
 | Crates        | `ntpd`, `ntp-proto`                                         | `statime`, `statime-ntp` |
