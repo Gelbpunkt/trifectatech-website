@@ -36,7 +36,7 @@ Statime is based on the Latin 'statim', originally meaning 'steadily' and later 
     </span>
 </p>
 
-In an upcoming blog post, we will talk in depth about these properties and other new features, and explain why we think an integrated approach is a step forward. [Ruben’s recent Ubuntu 26.10 Summit talk](https://www.youtube.com/live/u9j-Ih_5Cw8?t=17289s) also explains our plans and the rename in some detail.
+In an upcoming blog post, we will talk in depth about these properties and other new features, and explain why we think an integrated approach is a step forward. [Ruben’s recent Ubuntu 26.10 Summit talk](https://www.youtube.com/watch?v=eLfdgVEiKmk) also explains our plans and the rename in some detail.
 
 > But wait... didn't you already have software called Statime? True! Our PTP library was previously called that. The PTP library will remain available under a different name and will be integrated into the new Statime, to provide its PTP support.
 
@@ -50,7 +50,7 @@ An overview of the name changes:
 
 | What          | Old name                                                    | New name   |
 |---------------|-------------------------------------------------------------|------------|
-| Binaries      | `ntp-daemon`, `ntp-ctl`, `ntp-metrics-exporter`             | `statime-daemon`, `statime-metrics`, `statime` |
+| Binaries      | `ntp-ctl`, `ntp-daemon` , `ntp-metrics-exporter`             | `statime`, `statime-daemon`, `statime-metrics`,  |
 | Binaries      | `statime-linux`                                             | no longer used |
 | systemd units | `ntpd-rs.service`, `ntpd-rs-metrics.service`                | `statime.service`, `statime-metrics.service` |
 | Crates        | `ntpd`, `ntp-proto`                                         | `statime`, `statime-ntp` |
