@@ -53,7 +53,7 @@ An overview of the name changes:
 | Binaries      | `ntp-daemon`, `ntp-ctl`, `ntp-metrics-exporter`             | TODO `statime`, `statime-metrics`, `statime-ctl` |
 | Binaries      | `statime-linux`                                             | no longer used |
 | systemd units | `ntpd-rs.service`, `ntpd-rs-metrics.service`                | `statime.service`, `statime-metrics.service` |
-| Crates        | `ntpd`, `ntp-proto`                                         | TBD, `statime-ntp` |
+| Crates        | `ntpd`, `ntp-proto`                                         | `statime`, `statime-ntp` |
 | Crates        | `statime`                                                   | `statime-ptp`|
 | Repositories  | `pendulum-project/ntpd-rs`                                  | `trifectatechfoundation/statime` |
 | Repositories  | `pendulum-project/statime`                                  | archived |
