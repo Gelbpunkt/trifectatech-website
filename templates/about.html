@@ -2,9 +2,9 @@
 
 {% block content %}
 
-{% set_global page_split = page.content | split(pat="======") %}
-{% set_global content1 = page_split.0 %}
-{% set_global content2 = page_split.1 %}
+{% set page_split = page.content | split(pat="======") %}
+{% set content1 = page_split[0] %}
+{% set content2 = page_split[1] %}
   
 <div class="hero">
   <h1><span>About us</span></h1>
