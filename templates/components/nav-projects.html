@@ -1,5 +1,5 @@
 {% set categories = get_taxonomy(kind="category") %}
-{% set infrastructureItems = categories.items | filter(attribute="name", value="infrastructure") | first %}
+{% set infrastructureItems = [i for i in categories.items if i.name == "infrastructure"] | first %}
 
 <ul>
     {% for initiative in infrastructureItems.pages %}
