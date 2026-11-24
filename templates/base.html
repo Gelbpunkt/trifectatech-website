@@ -8,15 +8,15 @@
   <meta name="theme-color" content="#ffffff">
 
   {% block meta_content %}
-  {% if page.title -%}
+  {% if page?.title -%}
     <title>{{page.title}} - Trifecta Tech Foundation</title>
-  {% elif section.title -%}
+  {% elif section?.title -%}
     <title>{{section.title}} - Trifecta Tech Foundation</title>
   {% else -%}
     <title>Trifecta Tech Foundation</title>
   {% endif -%}
 
-  {% if page.extra and page.extra.image -%}
+  {% if page?.extra?.image -%}
     {% set imageUrl = get_url(path=page.extra.image) %}
     <meta name="image" property="og:image" content="{{imageUrl | safe}}">
   {% else -%}
