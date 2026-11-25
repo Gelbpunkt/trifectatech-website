@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% import "macros.html" as macros %}
 
 {% block content %}
 <div class="hero">
@@ -10,6 +9,6 @@
         {{ page.content | safe }}
     </div>
 </div>
-{{ macros::sponsors(goldSponsors=page.extra.goldSponsors, silverSponsors=page.extra.silverSponsors) }}
-{{ macros::page_funders(currentFunders=page.extra.funders, supporters=page.extra.supporters) }}
+{{<sponsors goldSponsors={page.extra.goldSponsors} silverSponsors={page.extra.silverSponsors} />}}
+{{<page_funders currentFunders={page.extra.funders} supporters={page.extra.supporters} />}}
 {% endblock content %}

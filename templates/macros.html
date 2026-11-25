@@ -1,4 +1,4 @@
-{% macro page_funders(currentFunders, supporters) %}
+{% component page_funders(currentFunders, supporters) %}
 
 {% set funders = load_data(path = "data/funders.json") %}
 <div class="partners">
@@ -10,7 +10,7 @@
         {% for name in currentFunders %}
             {% for funder in funders %}
                 {% if funder.image == name %}
-                    {{ macros::funder_tile(funder=funder) }}
+                    {{<funder_tile funder={funder} />}}
                 {% endif %}
             {% endfor %}
         {% endfor %}
@@ -24,16 +24,16 @@
         {% for name in supporters %}
             {% for funder in funders %}
                 {% if funder.image == name %}
-                    {{ macros::funder_tile(funder=funder) }}
+                    {{<funder_tile funder={funder} />}}
                 {% endif %}
             {% endfor %}
         {% endfor %}
     </div>
     {% endif %}
 </div>
-{% endmacro page_funders %}
+{% endcomponent page_funders %}
 
-{% macro funder_tile(funder) %}
+{% component funder_tile(funder) %}
 <div class="funder card-link">
     <div class="image {{funder.image}}"></div>
 
@@ -79,10 +79,10 @@
         </div>
     </div>
 </div>
-{% endmacro funder_tile %}
+{% endcomponent funder_tile %}
 
 
-{% macro sponsors(goldSponsors, silverSponsors) %}
+{% component sponsors(goldSponsors, silverSponsors) %}
 
 {% set funders = load_data(path = "data/funders.json") %}
 <div class="partners sponsors">
@@ -94,7 +94,7 @@
         {% for name in goldSponsors %}
             {% for funder in funders %}
                 {% if funder.image == name %}
-                    {{ macros::funder_tile(funder=funder) }}
+                    {{<funder_tile funder={funder} />}}
                 {% endif %}
             {% endfor %}
         {% endfor %}
@@ -108,7 +108,7 @@
         {% for name in silverSponsors %}
             {% for funder in funders %}
                 {% if funder.image == name %}
-                    {{ macros::funder_tile(funder=funder) }}
+                    {{<funder_tile funder={funder} />}}
                 {% endif %}
             {% endfor %}
         {% endfor %}
@@ -116,6 +116,6 @@
     {% endif %}
 </div>
 
-{% endmacro sponsors %}
+{% endcomponent sponsors %}
 
 

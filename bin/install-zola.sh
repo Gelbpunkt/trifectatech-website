@@ -2,7 +2,7 @@
 set -euo pipefail
 
 INSTALL_DIR="/usr/local/bin"
-LATEST_TAG="v0.20.0"
+LATEST_TAG="v0.23.6"
 
 if [ "$(id -u)" -eq 0 ]; then
     SUDO=""

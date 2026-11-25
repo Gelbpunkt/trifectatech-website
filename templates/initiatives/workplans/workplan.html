@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% import "macros.html" as macros %}
 
 {% block content %}
 <div class="hero">
@@ -7,7 +6,7 @@
 </div>
 
 {% set project = get_page(path=page.extra.backLink ~ ".md") %}
-{{ macros::page_funders(currentFunders=project.extra.funders, supporters=project.extra.supporters) }}
+{{<page_funders currentFunders={project.extra.funders} supporters={project.extra.supporters} />}}
 
 <div class="paragraph">
     <div class="markdown">
