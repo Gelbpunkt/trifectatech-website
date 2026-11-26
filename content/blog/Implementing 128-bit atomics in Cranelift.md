@@ -33,7 +33,7 @@ However, we cannot make use of these extensions because they are not part of the
 
 ## Atomics in WASM
 
-Cranelift is written first and foremost for wasmtime, a WebAssembly runtime. This means that its model of atomics is heavily influenced by WebAssembly's needs. Most importantly, WebAssembly [requires sequentially consistent memory ordering](https://github.com/WebAssembly/threads/blob/main/proposals/threads/Overview.md#atomic-memory-accesses) for atomic memory accesses. This is relevant for us on ARM, because there atomic load instructions instead only have acquire semantics, and atomic stores have release semantics.
+Cranelift is written first and foremost for [wasmtime](https://docs.wasmtime.dev/), a WebAssembly runtime. This means that its model of atomics is heavily influenced by WebAssembly's needs. Most importantly, WebAssembly [requires sequentially consistent memory ordering](https://github.com/WebAssembly/threads/blob/main/proposals/threads/Overview.md#atomic-memory-accesses) for atomic memory accesses. This is relevant for us on ARM, because there atomic load instructions instead only have acquire semantics, and atomic stores have release semantics.
 
 All the atomic operations we are going to be implementing have to be implemented sequentially consistent.
 
