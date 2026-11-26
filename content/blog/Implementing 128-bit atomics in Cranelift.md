@@ -27,23 +27,23 @@ Fortunately, ARM publishes the **A**rchitecture **R**eference **M**anual on [its
 
 Atomics on 64-bit ARM are not very different than on other architectures: The base instruction set contains instruction pairs `ldar`/`stlr` (64-bit) and `ldaxp`/`stlxp` (128-bit) that allow us to perform atomic loads and stores. These instructions have acquire/release semantics.
 
-We'll have to implement four operations: load, store, compare-and-swap (CAS) and read-modify-write (RMW). While loads and stores are quite trivial, CAS or RMW operations are actually much more complicated. The ARMv8.0 baseline does not provide any single instruction to perform these operations. In ARMv8.1, ARM introduced the [Large System Extensions (LSE)](https://learn.arm.com/learning-paths/servers-and-cloud-computing/lse/intro/), which add various very useful instructions for 64-bit atomic operations. This was later extended in ARMv9.3 with LSE128, which adds limited support for some 128-bit atomic operations.
+We'll have to implement four operations: load, store, compare-and-swap (CAS) and read-modify-write (RMW). While loads and stores are straightforward, CAS or RMW operations are actually much more complicated. The ARMv8.0 baseline does not provide one single instruction to perform these operations. In ARMv8.1, ARM introduced the [Large System Extensions (LSE)](https://learn.arm.com/learning-paths/servers-and-cloud-computing/lse/intro/), which add various very useful instructions for 64-bit atomic operations. This was later extended in ARMv9.3 with LSE128, which adds limited support for some 128-bit atomic operations.
 
-However, we cannot make use of these extensions because they are not part of the target baseline. Ideally, we would generate better code if the target features for LSE or LSE128 are enabled, but for implementing any kind of support for 128-bit atomics at all, we will need to use some less optimal fallbacks.
+However, we cannot make use of these extensions because they are not part of the target baseline. Ideally, we would generate better code if the target features for LSE or LSE128 are enabled, but for implementing any kind of support for 128-bit atomics at all, we will need to use less optimal fallbacks.
 
 ## Atomics in WASM
 
-Cranelift is written first and foremost for wasmtime. This means that its model of atomics is heavily influenced by WebAssembly's needs. Most importantly, WebAssembly [requires sequentially consistent memory ordering](https://github.com/WebAssembly/threads/blob/main/proposals/threads/Overview.md#atomic-memory-accesses) for atomic memory accesses. This is quite important for us on ARM, as our atomic load instructions only have acquire semantics, and atomic stores have release semantics.
+Cranelift is written first and foremost for wasmtime, a WebAssembly runtime. This means that its model of atomics is heavily influenced by WebAssembly's needs. Most importantly, WebAssembly [requires sequentially consistent memory ordering](https://github.com/WebAssembly/threads/blob/main/proposals/threads/Overview.md#atomic-memory-accesses) for atomic memory accesses. This is relevant for us on ARM, because there atomic load instructions instead only have acquire semantics, and atomic stores have release semantics.
 
 All the atomic operations we are going to be implementing have to be implemented sequentially consistent.
 
 ## Learning from LLVM
 
-Let's take a look at how LLVM handles this. Ideally, we'd emit the same instructions as LLVM from Cranelift. [Compiler Explorer](https://rust.godbolt.org/) is an incredibly useful tool to see which assembly LLVM outputs for a given snippet of, in this case, Rust code.
+Let's take a look at how LLVM handles this. Ideally, we'll make Cranelift emit the same instructions as LLVM. [Compiler Explorer](https://rust.godbolt.org/) is an incredibly useful tool to see what assembly LLVM outputs for a given snippet of, in this case, Rust code.
 
 All the following examples can be found in [this Compiler Explorer snippet](https://rust.godbolt.org/z/MqrfbToqE). Note the use of `-Ctarget-feature=-outline-atomics`, which forces LLVM to inline the atomic operations.
 
-If we didn't set this flag, it would call into helper functions that will detect whether LSE is available or not and conditionally make use of LSE if available and otherwise use a fallback if it's unavailable, but we wouldn't be able to look at the assembly for the atomic operations.
+If we didn't set this flag, LLVM would instead emit calls to helper functions that detect whether LSE is available or not and conditionally make use of LSE if available, and otherwise use a fallback. But these calls hide the assembly that we're after.
 
 Let's look at `add_u128`:
 
@@ -88,7 +88,7 @@ It simply attempts to store back the loaded value in a loop. Because it uses the
 
 Cranelift lives inside the [wasmtime](https://github.com/bytecodealliance/wasmtime/) monorepository, and fortunately we'll mostly be working with a very small part of the wasmtime codebase, all of which except for some tests resides inside the [cranelift/codegen/](https://github.com/bytecodealliance/wasmtime/tree/main/cranelift/codegen) directory.
 
-As an example, we'll be implementing the 128-bit atomic load, the other operations are quite similar and only slightly more complex in the generated code.
+As an example, we'll be implementing the 128-bit atomic load, the other operations are quite similar and only require generating slightly more complex instruction sequences.
 
 ### Finding a starting point
 
@@ -217,7 +217,7 @@ The `LoadAcquire` instruction definition can be found a bit earlier in the same 
   (flags MemFlagsData))
 ```
 
-From the definition of `LoadAcquire`, it's quite obvious that it is not a suitable instruction to use for a 128-bit atomic load. For a 64-bit atomic load, one destination register (`rt`) is sufficient, but for a 128-bit load, we will need two destination GPRs.
+From the definition of `LoadAcquire`, it's obvious that it is not a suitable instruction to use for a 128-bit atomic load. For a 64-bit atomic load, one destination register (`rt`) is sufficient, but if we want to perform a 128-bit atomic load and store the result in GPRs, we will need two destination registers.
 
 ### Wiring it up
 
@@ -235,7 +235,7 @@ Therefore, we will need to add a new instruction, `LoadAcquire128`. It'll look a
   (flags MemFlagsData))
 ```
 
-Why do we need `scratch` here? Remember: our implementation of the atomic load must be sequentially consistent. We will use an exclusive load-store loop to implement this. `scratch` is a register we will use to hold the success status of the store operation, its value before and after the instruction has no meaning.
+Why do we need `scratch` here? Remember: our implementation of the atomic load must be sequentially consistent. We will use an exclusive load-store loop to guarantee this ordering. `scratch` is a register we will use to hold the success status of the store operation, its value before and after the instruction has no meaning.
 
 We'll also need a helper for emitting the instruction in CLIF:
 
@@ -260,7 +260,7 @@ Now, we want to make sure that an `atomic_load.i128` gets lowered to `load_acqui
       (load_acquire_128 flags addr))
 ```
 
-`rule 1` sets the precedence for this rule higher than the one for the smaller atomic loads.
+`rule 1` sets the precedence for this rule higher than the one for the smaller atomic loads, which used just `rule` and therefore defaults to precedence `0`.
 
 Attempting to compile Cranelift right after adding this new instruction will fail. We need to teach Cranelift a few things about our instruction before this will compile.
 
@@ -290,6 +290,8 @@ A neat thing here is that, in Cranelift, `Writable<Reg>` and `Reg` are separate 
 
 #### Emitting instructions
 
+With the necessary term rewriting in place and our instruction wired up to regalloc, we can finally start emitting machine instructions.
+
 Remember, what we want to emit is the following assembly:
 
 ```asm
@@ -305,11 +307,11 @@ However, before we can actually start emitting the instruction sequence we saw i
 
 #### Implementing new encodings
 
-Fortunately, the manual has a very helpful visualization of the encoding for `ldaxp` (C6.2.196):
+Fortunately, the manual has a helpful visualization of the encoding for `ldaxp` (C6.2.196):
 
 ![image](https://hackmd.io/_uploads/SJweFrJTMx.png)
 
-`sz` can be `0` or `1` for 32-bit or 64-bit parameters respectively. While we're only going to be using it for 64-bit parameters, I opted to support both in `enc_ldaxp` to more accurately model the instruction.
+`sz` can be `0` or `1` for 32-bit or 64-bit parameters respectively. While we're only going to be using it for 64-bit parameters, I opted to support both in `enc_ldaxp` to make it easier to check that the implementation matches the manual.
 
 Therefore, we can implement `enc_ldaxp` as follows:
 
@@ -346,7 +348,7 @@ We can now finally start emitting the machine instructions by adding a new match
 } => {
 ```
 
-First, we create a new label for `again`, which we bind to the current offset:
+We're going to emit a loop, so we need a label at the start that we can jump back to if the exclusive store failed. We'll call this label `again` and bind it to the current offset:
 
 ```rust
 let again_label = sink.get_label();
@@ -368,7 +370,7 @@ sink.put4(enc_ldaxp(I64, rt1, rt2, rn));
 
 Since `ldaxp` performs a memory access, which may trap, we also add a trap record at the current offset.
 
-`stxp` may also trap and is otherwise quite straightforward to emit:
+`stxp` may also trap and is otherwise similar to emit:
 
 ```rust
 if let Some(trap_code) = flags.trap_code() {
@@ -442,7 +444,7 @@ $ CRANELIFT_TEST_BLESS=1 cargo run -p cranelift-tools -- test filetests/filetest
 
 :partying_face: The only thing missing now is to actually verify whether this generated code does the right thing. Fortunately, Cranelift also has runtests, which compile the IR with a JIT and execute it.
 
-The runtest for 128-bit atomics is `filetests/filetests/runtests/atomic-128.clif`, which tests whether load, store, CAS and RMW all exert correct semantics. However, only one access is performed, so we cannot verify whether we have implemented the atomic semantics correctly. If there were an egregious logic error, like loading a wrong value, it would however catch that.
+The runtest for 128-bit atomics is `filetests/filetests/runtests/atomic-128.clif`, which tests whether load, store, CAS and RMW all exhibit correct semantics. However, only one access is performed, so we cannot verify whether we have implemented the atomic semantics correctly. It would only catch egregious logic errors, like loading a wrong value.
 
 ```llvm
 function %atomic_load(i128) -> i128 {
@@ -507,7 +509,7 @@ block0(v0: i128):
 
 Running this test results in a crash with `SIGSEGV`. In order to understand what's going on here, it'd be great if I could just attach a debugger and see which instructions get executed. That sounds easier than it is, but fortunately, [bjorn3](https://github.com/bjorn3) was able to help me do just that.
 
-rustc_codegen_cranelift contains a neat little helper script, [`jit-helpers.py`](https://github.com/rust-lang/rustc_codegen_cranelift/blob/main/scripts/jit-helpers.py), which makes debugging this very easy. All we need to do is load this in GDB and it will generate a small file which contains the addresses of all the JITed functions:
+rustc_codegen_cranelift contains a neat little helper script, [`jit-helpers.py`](https://github.com/rust-lang/rustc_codegen_cranelift/blob/main/scripts/jit-helpers.py), which makes debugging Cranelift's JIT very easy. All we need to do is load the script in GDB and it will generate a small file which contains the addresses of all the JITed functions:
 
 ```bash
 $ PERF_BUILDID_DIR=1 gdb -q --args ../../target/debug/clif-util test ../filetests/filetests/runtests/load_crash.clif
@@ -606,7 +608,7 @@ Quite early while working on this, I realized that AArch64 was not the only back
 
 ### The result
 
-128-bit atomic support for AArch64 and s390x shipped in Cranelift 0.138, and rustc_codegen_cranelift is now finally able to compile the standard library without patches.
+128-bit atomic support for AArch64 and s390x shipped in [Cranelift 0.138](https://github.com/bytecodealliance/wasmtime/releases/tag/v51.0.0), and rustc_codegen_cranelift is [now](https://github.com/rust-lang/rustc_codegen_cranelift/pull/1725) finally able to compile the standard library without patches.
 
 I'd like to thank the bytecodealliance folks for being so welcoming to new contributors — I was able to spontaneously hop in a meeting with a bunch of people, ask various questions, get valuable feedback and found a very kind reviewer for my changes. And all of this even though they were flooded with work. Cranelift is an excellent project to hack on and get started with!
 
