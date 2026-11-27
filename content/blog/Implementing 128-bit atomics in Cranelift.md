@@ -309,7 +309,7 @@ However, before we can actually start emitting the instruction sequence we saw i
 
 Fortunately, the manual has a helpful visualization of the encoding for `ldaxp` (C6.2.196):
 
-![image](https://hackmd.io/_uploads/SJweFrJTMx.png)
+![ldaxp encoding](/blog/ldaxp.png)
 
 `sz` can be `0` or `1` for 32-bit or 64-bit parameters respectively. While we're only going to be using it for 64-bit parameters, I opted to support both in `enc_ldaxp` to make it easier to check that the implementation matches the manual.
 
