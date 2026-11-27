@@ -111,8 +111,8 @@ These testcases look very promising.
 The tests set a bunch of options at the beginning, for example:
 
 * `test compile precise-output` to specify that this is a codegen test, as opposed to a test that is intended to be run
-* `target aarch64` to enable the test for AArch64
-* `target aarch64 has_lse` to also enable LSE for this test
+* `target aarch64` to enable a test for AArch64
+* `target aarch64 has_lse` to enable a test for AArch64 and use LSE instructions
 
 What follows are function definitions in CLIF, Cranelift's intermediate representation (IR). For example, `atomic_load.clif` contains the following function:
 
@@ -509,7 +509,7 @@ block0(v0: i128):
 
 Running this test results in a crash with `SIGSEGV`. In order to understand what's going on here, it'd be great if I could just attach a debugger and see which instructions get executed. That sounds easier than it is, but fortunately, [bjorn3](https://github.com/bjorn3) was able to help me do just that.
 
-rustc_codegen_cranelift contains a neat little helper script, [`jit-helpers.py`](https://github.com/rust-lang/rustc_codegen_cranelift/blob/main/scripts/jit-helpers.py), which makes debugging Cranelift's JIT very easy. All we need to do is load the script in GDB and it will generate a small file which contains the addresses of all the JITed functions:
+Setting `PERF_BUILDID_DIR` causes Cranelift's JIT to emit a map file `/tmp/perf-$PID.map` which contains a list of functions, their addresses in memory and their sizes.
 
 ```bash
 $ PERF_BUILDID_DIR=1 gdb -q --args ../../target/debug/clif-util test ../filetests/filetests/runtests/load_crash.clif
@@ -519,10 +519,9 @@ of file /home/aelin/wasmtime/target/debug/clif-util.
 Use `info auto-load python-scripts [REGEXP]' to list them.
 ```
 
-Let's load the helper script and run the program:
+Let's run the program:
 
 ```
-(gdb) source ~/Downloads/jit-helpers.py
 (gdb) r
 Starting program: /home/aelin/wasmtime/target/debug/clif-util test ../filetests/filetests/runtests/load_crash.clif
 [New LWP 11025]
@@ -555,9 +554,7 @@ Thread 3 "worker #0" received signal SIGSEGV, Segmentation fault.
 0x0000fffff75cf004 in ?? ()
 ```
 
-At this point, the script has created a file `/tmp/perf-$PID.map` which contains a list of functions, their addresses in memory and their sizes.
-
-Let's take a look:
+At this point, the map file has been created. Let's take a look:
 
 ```
 (gdb) !cat /tmp/perf-11019.map
